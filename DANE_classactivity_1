@@ -1,0 +1,35 @@
+OurData <- read.csv('/Users/kianadane/Documents/GitHub/stat6021/ClassData.csv')
+head(OurData,5)
+
+OurData$Slp <- as.numeric(as.character(OurData$Sleep_Hrs))
+OurData$Phone_Hrs <- as.numeric(as.character(OurData$Phone_Time))
+
+OurData2 <- OurData
+head(OurData2, 5)
+
+plot(OurData2$Phone_Hrs, OurData2$Slp, 
+     xlab = "Phone Hours", 
+     ylab = "Sleep Hours", 
+     main = "Scatterplot of Sleep Hours vs. Phone Hours", 
+     pch = 19, 
+     col = "blue")
+
+
+# It does not immediately seem like the relationship between 
+# time spent on phones vs time asleep is linear. 
+
+
+mean_phone_hrs <- mean(OurData2$Phone_Hrs, na.rm = TRUE)
+sd_phone_hrs <- sd(OurData2$Phone_Hrs, na.rm = TRUE)
+
+n <- sum(!is.na(OurData2$Phone_Hrs))
+
+se_phone_hrs <- sd_phone_hrs / sqrt(n)
+
+alpha <- 0.05
+critical_value <- qt(1 - alpha/2, df = n - 1)
+lower_bound <- mean_phone_hrs - critical_value * se_phone_hrs
+upper_bound <- mean_phone_hrs + critical_value * se_phone_hrs
+
+cat("95% Conf. Int:", lower_bound, "to", upper_bound, "\n")
+
