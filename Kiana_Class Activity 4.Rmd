@@ -1,0 +1,113 @@
+---
+title: 'Class activity #4'
+author: "Ashley Miller, Andrew Cornfeld, Kiana Dane, Javier Alonso"
+date: "2024-07-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(tidyverse)
+books <- read.csv("Books_Data_Clean.csv")
+
+```
+
+```{r plots}
+ggplot(books, mapping=aes(x=Author_Rating, y=gross.sales, fill=Author_Rating)) +
+  geom_boxplot()
+```
+
+## Question 1 part 1
+
+## Null Hypotheses
+$$H_0 : \mu_1 = \mu_2 = \mu_3 = \mu_4$$
+
+## Alternative hypothesis
+$$H_A : \text{At least one } \mu_i \neq \text{ the average gross sales of the group.}$$
+```{r anova analysis}
+
+anova_books <- aov(gross.sales~ Author_Rating, data = books) 
+summary(anova_books)
+
+```
+# Question 1 part 1 interpretation
+the anova analysis yielded a p value of 3.03e-11 which falls below an alpha of
+0.05. We can reject the null hypothesis and say at least one average sales
+is different than the group.
+
+
+## Question 1 part 2
+
+```{r create tukey analysis}
+TukeyHSD(anova_books, conf.level = 0.95)
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r change results to df}
+tukey_result <- TukeyHSD(anova_books, conf.level = 0.95)
+tukey_df = as.data.frame(tukey_result$Author_Rating)
+tukey_df$comparison <- rownames(tukey_df)
+tukey_df
+```
+
+```{r plot tukey results to visualize}
+ggplot(tukey_df, aes(x = comparison, y = diff)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  geom_errorbar(aes(ymin = lwr, ymax = upr), width = 0.2) +
+  theme_minimal() +
+  labs(title = "Tukey HSD Results",
+       x = "Comparison",
+       y = "Difference in Means") + coord_flip()
+```
+
+## Question 1 post hoc analysis interpretation
+
+The differences between the average gross sales of novice authors and excellent authors is inclusive of zero, so a conclusion among hypotheses is indeterminable with this analysis. The same is true for the difference between intermediate authors and excellent authors, as well as the difference between novice and famous authors. 
+
+While a conclusion is not immediately evident by reading the printed results of the TukeyHSD test, 
+representing the results in the box plot above makes it easier to draw the conclusion that novice authors and intermediate authors yield higher gross sales on average when compared to differently-rated authors.
+
+## Question 2 
+We calculate the correlation coefficients as seen below. We would further
+determine the relationship by creating a linear regression model to represent
+and interpolate within our data set.
+
+
+```{r}
+print(paste("The correlation between gross sales and book average rating is:",cor(books$gross.sales, books$Book_average_rating)))
+print(paste("The correlation between gross sales and book ratings count is:",cor(books$gross.sales, books$Book_ratings_count)))
+print(paste("The correlation between gross sales and publisher revenue is:",cor(books$gross.sales, books$publisher.revenue)))
+print(paste("The correlation between gross sales and book sale price is:",cor(books$gross.sales, books$sale.price)))
+print(paste("The correlation between gross sales and book sales rank is:",cor(books$gross.sales, books$sales.rank)))
+print(paste("The correlation between gross sales and book units sold is:",cor(books$gross.sales, books$units.sold)))
+```
+```{r}
+avgrating_cor <- cor(books$gross.sales, books$Book_average_rating)
+numrating_cor <- cor(books$gross.sales, books$Book_ratings_count)
+pubrev_cor <- cor(books$gross.sales, books$publisher.revenue)
+saleprice_cor <- cor(books$gross.sales, books$sale.price)
+rank_cor <- cor(books$gross.sales, books$sales.rank)
+sold_cor <- cor(books$gross.sales, books$units.sold)
+
+correlations <- data.frame(
+  Category = c("Average Rating", "Number of Ratings", "Publisher Revenue", "Sale Price", "Sales Rank", "Units Sold"),
+  Value = c(avgrating_cor, numrating_cor, pubrev_cor, saleprice_cor, rank_cor, sold_cor))
+
+ggplot(data = correlations, aes(x = Category, y = Value,fill = Category)) +
+  geom_bar(stat = "identity") + 
+  scale_fill_manual(values = c("Average Rating" = "blue", "Number of Ratings" = "orange", "Publisher Revenue" = "darkblue", "Sale Price" = "purple", "Sales Rank" = "turquoise", "Units Sold" = "darkgreen"))+
+  labs(title = "Correlation to Gross Sales", x = "Book Status", y = "Value") +
+  coord_flip()
+
+```
+
+## Interpretation
+The correlation between gross sales and publisher revenue is a fairly strong 
+positive correlation with an
+r of 0.912891239421352
+
+
+

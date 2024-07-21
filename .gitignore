@@ -163,3 +163,4 @@ cython_debug/
 airlines.csv
 airports.csv
 flights.csv
+.Rproj.user
